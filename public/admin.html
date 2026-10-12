@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Center - UnitedSoft</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="brand-wrap">
+      <div class="brand-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div class="brand-text">
+        <h1>UnitedSoft Technologies</h1>
+        <p>Administrator Control Center (Web Only)</p>
+      </div>
+    </div>
+
+    <div class="user-profile-bar">
+      <span class="role-badge badge-admin"><i class="fa-solid fa-lock"></i> Super Admin</span>
+      <div class="user-info">
+        <div class="user-name" id="adminUserName">Administrator</div>
+        <div class="user-sub" id="adminUserEmail">admin@unitedsoft.com</div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+      </button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <button class="nav-item active" onclick="switchNav('dashboard', this)">
+        <i class="fa-solid fa-gauge-high"></i> Dashboard
+      </button>
+      <button class="nav-item" onclick="switchNav('staff', this)">
+        <i class="fa-solid fa-users"></i> Staff Directory
+      </button>
+      <button class="nav-item" onclick="switchNav('attendance', this)">
+        <i class="fa-solid fa-calendar-check"></i> Attendance Oversight
+      </button>
+      <button class="nav-item" onclick="switchNav('leaves', this)">
+        <i class="fa-solid fa-envelope-open-text"></i> Leave Approvals
+        <span class="badge-count" id="pendingLeaveBadge" style="display: none;">0</span>
+      </button>
+      <button class="nav-item" onclick="switchNav('payroll', this)">
+        <i class="fa-solid fa-file-invoice-dollar"></i> Payroll Management
+      </button>
+      <button class="nav-item" onclick="switchNav('geofence', this)">
+        <i class="fa-solid fa-location-dot"></i> Geofence & Wi-Fi
+      </button>
+      <button class="nav-item" onclick="switchNav('security', this)">
+        <i class="fa-solid fa-shield-cat"></i> Security Audit Logs
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ================= SECTION 1: DASHBOARD ================= -->
+      <section id="sec-dashboard" class="content-sec">
+        <div class="section-header">
+          <div>
+            <h2>Administrator Overview</h2>
+            <p>Real-time enterprise metrics and workforce operations</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="openAddStaffModal()">
+              <i class="fa-solid fa-user-plus"></i> Onboard New Staff
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #EEF2FF; color: var(--primary);">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <div class="stat-val" id="statTotalStaff">--</div>
+              <div class="stat-label">Total Employees</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: var(--success-bg); color: var(--success);">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <div class="stat-val" id="statPresentToday">--</div>
+              <div class="stat-label">Present Today</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: var(--warning-bg); color: var(--warning);">
+              <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <div>
+              <div class="stat-val" id="statPendingLeaves">--</div>
+              <div class="stat-label">Pending Leaves</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: var(--secondary-light); color: var(--secondary);">
+              <i class="fa-solid fa-wifi"></i>
+            </div>
+            <div>
+              <div class="stat-val" id="statWifiStatus" style="font-size: 17px;">--</div>
+              <div class="stat-label">Company Wi-Fi Security</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span><i class="fa-solid fa-clock-rotate-left"></i> Today's Live Attendance Feed</span>
+            <button class="btn btn-outline btn-sm" onclick="loadDashboardData()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Check-In</th>
+                  <th>Status</th>
+                  <th>Method</th>
+                  <th>Proximity</th>
+                </tr>
+              </thead>
+              <tbody id="dashAttendanceTbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading live records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: STAFF DIRECTORY ================= -->
+      <section id="sec-staff" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Staff Directory & Role Control</h2>
+            <p>Manage employees, team leaders, roles, and device bindings</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="openAddStaffModal()">
+              <i class="fa-solid fa-user-plus"></i> Add Staff
+            </button>
+          </div>
+        </div>
+
+        <!-- Department Filter Bar (Specification Requirement) -->
+        <div class="filter-bar">
+          <div class="filter-header">
+            <div class="filter-label">
+              <i class="fa-solid fa-building"></i> Department Filter
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="setStaffDeptFilter('')">All Departments</button>
+          </div>
+          <div class="chips-row" id="staffDeptChipsRow">
+            <div class="chip active-teal" onclick="setStaffDeptFilter('')">All Departments</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <div style="position: relative; flex: 1;">
+              <input type="text" id="staffSearchInput" class="input-control" placeholder="Search staff by name, code, email, designation..." oninput="handleStaffSearch()">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Role</th>
+                  <th>Department & Designation</th>
+                  <th>Base Pay</th>
+                  <th>Device Binding</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffTbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading staff directory...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: ATTENDANCE OVERSIGHT ================= -->
+      <section id="sec-attendance" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Company Attendance & Field Logs</h2>
+            <p>Inspect digital punches, GPS proximity, photo proof, and outside-shift assignments</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="openOutsideShiftModal()">
+              <i class="fa-solid fa-graduation-cap"></i> Record Outside-Shift
+            </button>
+            <button class="btn btn-outline" onclick="openManualPunchModal()">
+              <i class="fa-solid fa-pen-to-square"></i> Manual Override
+            </button>
+          </div>
+        </div>
+
+        <!-- Department Filter & Month Filter -->
+        <div class="filter-bar">
+          <div class="filter-header">
+            <div class="filter-label">
+              <i class="fa-solid fa-building"></i> Department Filter
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="setAttDeptFilter('')">All Departments</button>
+          </div>
+          <div class="chips-row" id="attDeptChipsRow">
+            <div class="chip active-teal" onclick="setAttDeptFilter('')">All Departments</div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-header">
+            <div class="filter-label">
+              <i class="fa-solid fa-calendar-days"></i> Month Filter
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 11.5px; color: var(--text-muted);">Select:</span>
+              <input type="month" id="attMonthInput" class="input-control" style="width: 170px; padding: 4px 8px; font-size: 12px;" onchange="handleAttMonthChange()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Date</th>
+                  <th>Check-In</th>
+                  <th>Check-Out</th>
+                  <th>Hours</th>
+                  <th>Status</th>
+                  <th>Distance</th>
+                  <th>Verification & Proof</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTbody">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading attendance logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Outside-Shift Entries Table -->
+        <div class="card">
+          <div class="card-title">
+            <span><i class="fa-solid fa-briefcase"></i> Outside-Shift / College Assignments</span>
+            <button class="btn btn-secondary btn-sm" onclick="openOutsideShiftModal()">
+              <i class="fa-solid fa-plus"></i> New Entry
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Department</th>
+                  <th>College Name</th>
+                  <th>Date</th>
+                  <th>Timing</th>
+                  <th>Purpose / Description</th>
+                </tr>
+              </thead>
+              <tbody id="outsideShiftTbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading outside-shift records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: LEAVE APPROVALS ================= -->
+      <section id="sec-leaves" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Leave Approvals & 3-Step Hierarchy</h2>
+            <p>Review leave requests across the Employee → TL → HR approval flow</p>
+          </div>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="filter-bar">
+          <div class="filter-header">
+            <div class="filter-label">
+              <i class="fa-solid fa-building"></i> Department Filter
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="setLeaveDeptFilter('')">All Departments</button>
+          </div>
+          <div class="chips-row" id="leaveDeptChipsRow">
+            <div class="chip active-teal" onclick="setLeaveDeptFilter('')">All Departments</div>
+          </div>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto;">
+          <button class="chip active" id="leaveTabAwaiting" onclick="setLeaveStatusTab('AWAITING_HR', this)">
+            Awaiting HR Review <span id="leaveTabCountBadge" class="badge-count" style="display: none;">0</span>
+          </button>
+          <button class="chip" onclick="setLeaveStatusTab('PENDING_TL', this)">Pending TL</button>
+          <button class="chip" onclick="setLeaveStatusTab('APPROVED', this)">Approved</button>
+          <button class="chip" onclick="setLeaveStatusTab('REJECTED', this)">Rejected</button>
+          <button class="chip" onclick="setLeaveStatusTab('ALL', this)">All Requests</button>
+        </div>
+
+        <div id="leavesContainer" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Injected via JS -->
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">Loading leaves...</div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 5: PAYROLL ================= -->
+      <section id="sec-payroll" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Automated Payroll Engine</h2>
+            <p>Compute attendance-backed salaries, deductions, and compliant payslips</p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="month" id="payrollMonthPicker" class="input-control" style="width: 170px;" onchange="loadPayrollRecords()">
+            <button class="btn btn-primary" onclick="handleGeneratePayroll()">
+              <i class="fa-solid fa-calculator"></i> Run Payroll
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Department</th>
+                  <th>Base Pay</th>
+                  <th>Allowances</th>
+                  <th>LOP Deductions</th>
+                  <th>PF / Tax</th>
+                  <th>Net Payable</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="payrollTbody">
+                <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Select month and load payroll records.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 6: GEOFENCE & WI-FI ================= -->
+      <section id="sec-geofence" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Geofence & Wi-Fi Security Settings</h2>
+            <p>Configure physical boundary and authorized company Wi-Fi network validation</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+          <!-- Card A: Company Wi-Fi Validation Security -->
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fa-solid fa-wifi" style="color: var(--secondary);"></i> Company Wi-Fi Security Control</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+              Enforce strict check-in validation against authorized corporate Wi-Fi network SSIDs.
+            </p>
+
+            <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <div>
+                <div style="font-weight: 700; font-size: 13.5px;">Enforce Authorized Wi-Fi Check-In</div>
+                <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Restricts mobile punch-in strictly to authorized company networks.</div>
+              </div>
+              <input type="checkbox" id="wifiToggle" style="width: 20px; height: 20px; cursor: pointer;">
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+              <label class="form-label" for="wifiSsidInput">Authorized Wi-Fi SSIDs (Comma-Separated)</label>
+              <input type="text" id="wifiSsidInput" class="input-control" placeholder="UnitedSoft-Office, UnitedSoft-5G, Corp-WiFi">
+              <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">
+                Enter allowed network names. Staff connecting to unauthorized Wi-Fi receive the exact alert:
+                <br><strong style="color: #0369A1;">"Check-In is allowed only from the authorized company network."</strong>
+              </p>
+            </div>
+
+            <button class="btn btn-secondary" onclick="handleSaveWifiSettings()" style="width: 100%; justify-content: center;">
+              <i class="fa-solid fa-floppy-disk"></i> Save Wi-Fi Security Policy
+            </button>
+          </div>
+
+          <!-- Card B: Physical Office Geofence -->
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Primary Office GPS Geofence</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="geoOfficeName">Office Name</label>
+              <input type="text" id="geoOfficeName" class="input-control">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label" for="geoLat">Latitude</label>
+                <input type="number" step="any" id="geoLat" class="input-control">
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label" for="geoLng">Longitude</label>
+                <input type="number" step="any" id="geoLng" class="input-control">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="geoRadius">Allowed Proximity Radius (Meters)</label>
+              <input type="number" id="geoRadius" class="input-control">
+              <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Staff punching beyond this boundary require mandatory geotagged selfie photo verification.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="geoAddress">Office Address</label>
+              <input type="text" id="geoAddress" class="input-control">
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-primary" onclick="handleSaveGeofence()" style="flex: 1; justify-content: center;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Geofence
+              </button>
+              <button class="btn btn-outline" onclick="handleSyncGps()" title="Sync office coordinates to your current browser location">
+                <i class="fa-solid fa-crosshairs"></i> Use My GPS
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 7: SECURITY AUDIT ================= -->
+      <section id="sec-security" class="content-sec" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2>Security & Impersonation Audit Logs</h2>
+            <p>Immutable audit trail of access attempts, SIM checks, and administrative sessions</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span><i class="fa-solid fa-fingerprint"></i> Device & Login Security Logs</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Employee Code</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Device ID</th>
+                  <th>Failure / Action Reason</th>
+                </tr>
+              </thead>
+              <tbody id="securityLogsTbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading security logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Add Staff Modal -->
+  <div class="modal-overlay" id="modalAddStaff">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-plus"></i> Onboard New Staff</h3>
+        <button class="modal-close" onclick="closeModal('modalAddStaff')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateStaff(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="addStaffName" class="input-control" required placeholder="John Doe">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Corporate Email</label>
+          <input type="email" id="addStaffEmail" class="input-control" required placeholder="john@unitedsoft.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temporary Password</label>
+          <input type="password" id="addStaffPassword" class="input-control" required value="Welcome@123">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Department</label>
+            <input type="text" id="addStaffDept" class="input-control" required placeholder="Engineering">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Designation</label>
+            <input type="text" id="addStaffDesig" class="input-control" required placeholder="Software Engineer">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Account Role</label>
+            <select id="addStaffRole" class="input-control" required>
+              <option value="EMPLOYEE">Employee (Staff)</option>
+              <option value="TL">Team Leader (TL)</option>
+              <option value="HR">HR Officer</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="addStaffPhone" class="input-control" placeholder="+91-9876543210">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assign Team Leader (Optional)</label>
+          <select id="addStaffTL" class="input-control">
+            <option value="">None / Direct</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Base Monthly Salary (₹)</label>
+          <input type="number" id="addStaffSalary" class="input-control" required value="45000">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Create & Onboard Staff
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leave Decision Modal -->
+  <div class="modal-overlay" id="modalLeaveDecision">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="leaveDecisionTitle">Leave Request Decision</h3>
+        <button class="modal-close" onclick="closeModal('modalLeaveDecision')">&times;</button>
+      </div>
+      <div id="leaveDecisionDetails" style="background: #F8FAFC; padding: 12px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 14px; border: 1px solid var(--border);"></div>
+      <div class="form-group">
+        <label class="form-label">Decision Remarks / Justification</label>
+        <textarea id="leaveDecisionRemarks" class="input-control" rows="3" placeholder="Enter remarks for the applicant..."></textarea>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('modalLeaveDecision')">Cancel</button>
+        <button id="btnConfirmLeaveDecision" class="btn btn-primary" style="flex: 1.5; justify-content: center;" onclick="confirmLeaveDecision()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Trail Modal -->
+  <div class="modal-overlay" id="modalAuditTrail">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-receipt"></i> Leave Approval Audit Trail</h3>
+        <button class="modal-close" onclick="closeModal('modalAuditTrail')">&times;</button>
+      </div>
+      <div id="auditTrailLogsList" style="display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Outside Shift Modal -->
+  <div class="modal-overlay" id="modalOutsideShift">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-graduation-cap"></i> Record Outside-Shift Work</h3>
+        <button class="modal-close" onclick="closeModal('modalOutsideShift')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveOutsideShift(event)">
+        <div class="form-group">
+          <label class="form-label">Select Staff Member</label>
+          <select id="outsideStaffSelect" class="input-control" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">College / Organization Name</label>
+          <select id="outsideCollegeSelect" class="input-control" onchange="toggleCustomCollege(this.value)">
+            <!-- Options populated from /api/outside-shift/colleges -->
+          </select>
+          <input type="text" id="outsideCollegeCustom" class="input-control" placeholder="Or enter custom college / venue name" style="margin-top: 6px;">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Date</label>
+            <input type="date" id="outsideDate" class="input-control" required>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Timing</label>
+            <input type="text" id="outsideTiming" class="input-control" value="09:30 AM - 05:30 PM">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assignment Purpose</label>
+          <input type="text" id="outsidePurpose" class="input-control" value="Campus Recruitment / Training" required>
+        </div>
+        <button type="submit" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Save Outside-Shift Record
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
